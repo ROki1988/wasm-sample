@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <script>
+            const memory = new WebAssembly.Memory({ initial: 256, maximum: 256 });
+            const importObj = {
+                env: {
+                    sinf: Math.sin,
+                    cosf: Math.cos,
+                    abortStackOverflow: () => { throw new Error('overflow'); },
+                    table: new WebAssembly.Table({ initial: 0, maximum: 0, element: 'anyfunc' }),
+                    tableBase: 0,
+                    memory: memory,
+                    memoryBase: 1024,
+                    STACKTOP: 0,
+                    STACK_MAX: memory.buffer.byteLength,
+                }
+            };
+            fetch('../target/wasm32-unknown-unknown/debug/wasm_sample.wasm')
+                .then(response => response.arrayBuffer())
+                .then(function(bytes) {
+                    console.log('2');
+                    return WebAssembly.instantiate(bytes, importObj);
+                })
+                .catch(error => console.log(error))
+                .then(results => {
+                    console.log(results.instance.exports.fuga(2));
+                    console.log(results.instance.exports.hoge());
+                });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
